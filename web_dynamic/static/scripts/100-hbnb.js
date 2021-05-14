@@ -46,17 +46,45 @@ $.ajax({
 
 let clickedAmen = [];
 let amenitiesId = [];
+let clickedStates = [];
+let statesId = [];
+let clickedCities = [];
+let citiesId = [];
 
 window.addEventListener('DOMContentLoaded', (event) => {
   $('input[type="checkbox"]').click(function () {
     if ($(this).is(':checked')) {
-      clickedAmen.push($(this).attr('data-name'));
-      amenitiesId.push($(this).attr('data-id'));
+      if ($(this).parents('.amenities').length) {
+        clickedAmen.push($(this).attr('data-name'));
+        amenitiesId.push($(this).attr('data-id'));
+      }
+      if ($(this).parents('.locations').length) {
+        if ($(this).parents('h2').length) {
+          clickedStates.push($(this).attr('data-name'));
+          statesId.push($(this).attr('data-id'));
+        } else {
+          clickedCities.push($(this).attr('data-name'));
+          citiesId.push($(this).attr('data-id'));
+        }
+      }
     } else if ($(this).is(':not(:checked)')) {
-      clickedAmen = arrayRemove(clickedAmen, $(this).attr('data-name'));
-      amenitiesId = arrayRemove(amenitiesId, $(this).attr('data-id'));
+      if ($(this).parents('.amenities').length) {
+        clickedAmen = arrayRemove(clickedAmen, $(this).attr('data-name'));
+        amenitiesId = arrayRemove(amenitiesId, $(this).attr('data-id'));
+      }
+      if ($(this).parents('.locations').length) {
+        if ($(this).parents('h2').length) {
+          clickedStates = arrayRemove(clickedStates, $(this).attr('data-name'));
+          statesId = arrayRemove(statesId, $(this).attr('data-id'));
+        } else {
+          clickedCities = arrayRemove(clickedCities, $(this).attr('data-name'));
+          citiesId = arrayRemove(citiesId, $(this).attr('data-id'));
+        }
+      }
     }
+    const citiesAndStates = clickedStates.concat(clickedCities);
     $('.amenities h4').text(truncate(clickedAmen.join(', '), 25));
+    $('.locations h4').text(truncate(citiesAndStates.join(', '), 25));
   });
   const url = 'http://0.0.0.0:5001/api/v1/status/';
   $.get(url, function (data, textStatus) {
@@ -69,7 +97,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
   });
 
   $('button[type="button"]').click(function () {
-    const dict = { amenities: amenitiesId };
+    const dict = {
+      amenities: amenitiesId,
+      states: statesId,
+      cities: citiesId
+    };
     $.ajax({
       url: 'http://0.0.0.0:5001/api/v1/places_search',
       dataType: 'json',
